@@ -1,0 +1,66 @@
+contact_book={}
+
+def add_contacts():
+    print("\n ----Add Contacts---")
+    name=input("Enter the Contact's Name:").strip()
+    email=input("Enter the Contact's Email:").strip()
+    phone=input("Enter the Contact's Phone:").strip()
+    
+    if name in contact_book:
+        print(f"Contact with the name {name} already exists")
+    else:
+        contact_book[name]={'phone':phone,'email':email}
+        print(f"Contact {name} added successfully")
+def view_contact():
+    print("\n ---View Contacts")
+    
+    if  not  contact_book:
+        print("No contacts found")
+    else:
+        for name,details in contact_book.items():
+            print(f"Name:{name}, phone:{details['phone']},Email: {details['email']}")
+            
+def update_contact():
+    print("\n ----Update Contact---")
+    name=input("Enter the name of the contact you want to update").strip()
+    if name not in contact_book:
+        print(f"No Contact found with the name {name}")
+    else:
+        phone=input("Enter the new Phone Number:").strip()
+        email=input("Enter the new email").strip()
+        contact_book[name]={'phone':phone,'email':email}
+        print(f"Contact  {name} updated successfully")
+        
+def delete_contact():
+    print("\n----Delete Contact---")
+    name=input("Enter the name of the contact you want to delete").strip()
+    if name not in contact_book:
+        print(f"No contact found with the name {name}")
+    else:
+        del contact_book[name]
+        print(f"Contact {name} deleted successfully")
+        
+def main():
+    while True:
+        print("\n---Contact Book Menu--")
+        print("1. Add Contact")
+        print("2. View Contact")
+        print("3. update Contact")
+        print("4. Delete Contact")
+        print("5. Exit")
+        
+        choice=input("Enter your choice (1-5)").strip()
+        
+        if choice =='1':
+            add_contacts()
+        elif choice=='2':
+            view_contact()
+        elif choice =='3':
+            update_contact()
+        elif choice =='4':
+            delete_contact()
+        elif choice =='5':
+            print("Existing The contact Book. Goodbye!!")
+        else:
+            print("Invalid choice. Please select a valid option")
+main()
