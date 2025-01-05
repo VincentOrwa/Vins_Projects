@@ -1,0 +1,97 @@
+Bubble Sort Algorithm Explained
+Definition:
+Bubble Sort is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements, and swaps them if they are in the wrong order. This process is repeated until the list is sorted.
+
+How Bubble Sort Works
+Concept:
+
+The largest unsorted element "bubbles up" to its correct position after each pass.
+Each pass processes fewer elements as the last elements are already sorted.
+Steps:
+
+Start at the beginning of the list.
+Compare the first two elements:
+If the first is greater than the second, swap them.
+Otherwise, leave them as is.
+Move to the next pair and repeat.
+At the end of the first pass, the largest element is in its correct position.
+Repeat the process for the rest of the list, ignoring the already sorted portion.
+Optimization:
+
+If no swaps are made during a pass, the list is already sorted, and the algorithm can terminate early.
+Python Code Snippet
+Here’s a Python implementation of Bubble Sort with detailed comments explaining each step:
+
+python
+Copy code
+def bubble_sort(arr):
+    """
+    Sorts a list in ascending order using the Bubble Sort algorithm.
+
+    :param arr: List of elements to be sorted
+    :return: None (The list is sorted in place)
+    """
+    n = len(arr)  # Length of the array
+
+    for i in range(n):  # Outer loop for each pass
+        # Track whether any swaps are made during this pass
+        swapped = False
+
+        # Inner loop to compare adjacent elements
+        for j in range(0, n - i - 1):  # Last i elements are already sorted
+            print(f"Comparing {arr[j]} and {arr[j + 1]}")  # Debug: Show comparison
+            if arr[j] > arr[j + 1]:  # If elements are in the wrong order
+                print(f"Swapping {arr[j]} and {arr[j + 1]}")  # Debug: Show swap
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]  # Swap the elements
+                swapped = True  # A swap was made
+
+        # Debug: Show the list after each pass
+        print(f"List after pass {i + 1}: {arr}")
+
+        # If no swaps were made, the list is already sorted
+        if not swapped:
+            print("No swaps made, list is sorted.")
+            break
+
+# Example usage
+data = [64, 34, 25, 12, 22, 11, 90]
+print("Original List:", data)
+bubble_sort(data)
+print("Sorted List:", data)
+Detailed Explanation of Code
+Outer Loop (for i in range(n)):
+
+Controls the number of passes.
+The variable i represents the current pass number.
+Inner Loop (for j in range(0, n - i - 1)):
+
+Compares adjacent elements.
+The range decreases with each pass since the last i elements are already sorted.
+Swapping:
+
+If the current element is greater than the next, they are swapped using Python's tuple unpacking:
+python
+Copy code
+arr[j], arr[j + 1] = arr[j + 1], arr[j]
+Early Exit with swapped:
+
+Tracks whether any swaps were made in a pass.
+If no swaps occur, the list is already sorted, and the algorithm terminates early.
+Debug Statements:
+
+Print the comparisons, swaps, and the state of the list after each pass to understand the algorithm's progress.
+Complexity Analysis
+Time Complexity:
+
+
+
+data = [64, 34, 25, 12, 22, 11, 90]
+
+Pass 1:
+Comparisons: 64 > 34, 34 > 25, 25 > 12, etc.
+Swaps: 64 with 34, 25 with 12, and so on.
+List after pass: [34, 25, 12, 22, 11, 64, 90]
+Pass 2:
+Comparisons continue for unsorted parts.
+List becomes: [25, 12, 22, 11, 34, 64, 90]
+... and so on until sorted.
