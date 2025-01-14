@@ -1,0 +1,115 @@
+Merge Sort is a divide-and-conquer sorting algorithm that recursively divides a list into smaller sublists, 
+sorts them, and merges them back together to produce a sorted list.
+python
+Copy code
+def merge_sort(arr):
+    """
+    Sorts an array using the Merge Sort algorithm.
+    
+    :param arr: List of elements to be sorted
+    :return: Sorted list
+    """
+    if len(arr) <= 1:  # Base case: A single element is already sorted
+        return arr
+
+    # Step 1: Divide the list into two halves
+    mid = len(arr) // 2
+    left_half = arr[:mid]
+    right_half = arr[mid:]
+
+    # Step 2: Recursively sort both halves
+    left_sorted = merge_sort(left_half)
+    right_sorted = merge_sort(right_half)
+
+    # Step 3: Merge the sorted halves
+    return merge(left_sorted, right_sorted)
+
+
+def merge(left, right):
+    """
+    Merges two sorted lists into a single sorted list.
+    
+    :param left: First sorted list
+    :param right: Second sorted list
+    :return: Merged sorted list
+    """
+    sorted_list = []
+    i = j = 0
+
+    # Step 1: Compare elements and merge
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            sorted_list.append(left[i])
+            i += 1
+        else:
+            sorted_list.append(right[j])
+            j += 1
+
+    # Step 2: Append remaining elements (if any)
+    sorted_list.extend(left[i:])
+    sorted_list.extend(right[j:])
+
+    return sorted_list
+
+
+# Example Usage
+if __name__ == "__main__":
+    data = [38, 27, 43, 3, 9, 82, 10]
+    print("Original List:", data)
+    sorted_data = merge_sort(data)
+    print("Sorted List:", sorted_data)
+4. Explanation of the Code
+4.1. Base Case
+python
+Copy code
+if len(arr) <= 1:
+    return arr
+A list with one or zero elements is already sorted.
+The recursion stops here, and the sorted sublist is returned.
+4.2. Divide
+python
+Copy code
+mid = len(arr) // 2
+left_half = arr[:mid]
+right_half = arr[mid:]
+Splits the input list into two halves using slicing.
+4.3. Recursive Sorting
+python
+Copy code
+left_sorted = merge_sort(left_half)
+right_sorted = merge_sort(right_half)
+Recursively applies merge_sort to both halves until the base case is reached.
+4.4. Merging
+python
+Copy code
+return merge(left_sorted, right_sorted)
+Calls the merge function to combine the sorted halves into a single sorted list.
+4.5. Merge Function
+python
+Copy code
+while i < len(left) and j < len(right):
+    if left[i] <= right[j]:
+        sorted_list.append(left[i])
+        i += 1
+    else:
+        sorted_list.append(right[j])
+        j += 1
+Compares elements from left and right and appends the smaller one to sorted_list.
+python
+Copy code
+sorted_list.extend(left[i:])
+sorted_list.extend(right[j:])
+
+Input:
+data = [38, 27, 43, 3, 9, 82, 10]
+
+Steps:
+Divide: Split into [38, 27, 43] and [3, 9, 82, 10].
+Recursively divide until single elements remain:
+[38], [27], [43], [3], [9], [82], [10].
+Merge sorted sublists:
+Merge [38] and [27] → [27, 38].
+Merge [27, 38] and [43] → [27, 38, 43].
+Merge [3] and [9] → [3, 9].
+Merge [3, 9] and [82, 10] → [3, 9, 10, 82].
+Merge [27, 38, 43] and [3, 9, 10, 82] → [3, 9, 10, 27, 38, 43, 82].
