@@ -1,0 +1,107 @@
+import os
+import json
+import nltk
+import string
+import multiprocessing
+from collections import defaultdict
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
+
+# Ensure required nltk resources are downloaded
+nltk.download('punkt')
+
+# Load stop words from provided stopwords.txt file
+def load_stopwords(filepath="stopwords.txt"):
+    """Loads stopwords from a given text file."""
+    with open(filepath, "r", encoding="utf-8") as f:
+        return set(f.read().splitlines())
+
+STOP_WORDS = load_stopwords()
+
+# Initialize stemmer
+stemmer = PorterStemmer()
+
+def display_course_info():
+    print("=================== CSC790-IR Homework 01 ==============")
+    print("First Name: Vincent")  # Replace with your name
+    print("Last Name: Orwa")  # Replace with your name
+    print("================================================")
+
+def process_text(text):
+    """Processes text by tokenizing, normalizing, removing stopwords, and stemming."""
+    text = text.lower().translate(str.maketrans('', '', string.punctuation))  # Convert text to lowercase and remove punctuation
+    tokens = word_tokenize(text)  # Tokenize the text into words
+    filtered_tokens = [stemmer.stem(word) for word in tokens if word not in STOP_WORDS]  # Remove stopwords and apply stemming
+    return filtered_tokens
+
+def build_inverted_index(documents):
+    """Builds an inverted index from a dictionary of document_id -> text."""
+    index = defaultdict(lambda: defaultdict(list))
+    for doc_id, text in documents.items():
+        tokens = process_text(text)
+        for position, term in enumerate(tokens):
+            index[term][doc_id].append(position)
+    return index
+
+def save_index(index, filename="inverted_index.json"):
+    """Saves the inverted index as a JSON file."""
+    with open(filename, "w") as f:
+        json.dump(index, f)
+
+def load_index(filename="inverted_index.json"):
+    """Loads an inverted index from a JSON file."""
+    with open(filename, "r") as f:
+        return json.load(f)
+
+def calculate_index_size(filename="inverted_index.json"):
+    """Returns the size of the inverted index in bytes and MB."""
+    size_bytes = os.path.getsize(filename)
+    size_mb = size_bytes / (1024 * 1024)
+    return size_bytes, size_mb
+
+def get_top_n_terms(index, n=10):
+    """Returns the top n most frequent terms in the inverted index."""
+    term_frequencies = {term: sum(len(docs) for docs in postings.values()) for term, postings in index.items()}
+    sorted_terms = sorted(term_frequencies.items(), key=lambda item: item[1], reverse=True)
+    return sorted_terms[:n]
+
+def process_documents_parallel(file_list):
+    """Reads and processes documents in parallel using multiprocessing."""
+    documents = {}
+    pool = multiprocessing.Pool()
+    results = pool.map(read_document, file_list)
+    pool.close()
+    pool.join()
+    for file, text in results:
+        documents[file] = text
+    return documents
+
+def read_document(filepath):
+    """Reads the content of a document."""
+    with open(filepath, "r", encoding="utf-8") as f:
+        return os.path.basename(filepath), f.read()
+
+def main():
+    display_course_info()
+    
+    # Load documents
+    document_folder = "./documents"  # Adjust path as needed
+    file_list = [os.path.join(document_folder, file) for file in os.listdir(document_folder) if file.endswith(".txt")]
+    documents = process_documents_parallel(file_list)
+    
+    # Build inverted index
+    index = build_inverted_index(documents)
+    
+    # Save index
+    save_index(index)
+    
+    # Display index size
+    size_bytes, size_mb = calculate_index_size()
+    print(f"Index size: {size_bytes} bytes ({size_mb:.2f} MB)")
+    
+    # Display top 10 frequent terms
+    top_terms = get_top_n_terms(index, 10)
+    print("Top 10 frequent terms:", top_terms)
+
+if __name__ == "__main__":
+    main()
