@@ -1,0 +1,86 @@
+Implement a Seq2Seq Model with Manual RNN Cells and Dot‐Product Attention
+
+n this assignment, you will implement a simple sequence‐to‐sequence (seq2seq) neural network with dot‐product attention, using RNN cells instead of PyTorch’s higher‐level recurrent layers. You will build three main components:
+
+An Encoder that processes an input sequence token‐by‐token using nn.RNNCell .
+A Dot‐Product Attention mechanism that computes a context vector at each decoding step. 
+A Decoder that uses nn.GRUCell (or equivalent) and the attention mechanism to produce outputs one timestep at a time.
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class DotAttention(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # No parameters needed for dot attention
+
+    def forward(self, decoder_state, encoder_outputs):
+        scores = torch.bmm(encoder_outputs, decoder_state.unsqueeze(2)).squeeze(2)
+        attn_weights = F.softmax(scores, dim=1)
+        context = torch.bmm(attn_weights.unsqueeze(1), encoder_outputs).squeeze(1)
+        return context, attn_weights
+
+class EncoderCellRNN(nn.Module):
+    def __init__(self, input_dim, embed_dim, hidden_dim):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.embedding = nn.Embedding(input_dim, embed_dim)
+        self.rnn_cell = nn.GRUCell(embed_dim, hidden_dim)
+
+    def forward(self, src):
+        batch_size, src_len = src.shape
+        embedded = self.embedding(src)
+        hidden = torch.zeros(batch_size, self.hidden_dim, device=src.device)
+        all_outputs = []
+        for t in range(src_len):
+            hidden = self.rnn_cell(embedded[:, t, :], hidden)
+            all_outputs.append(hidden.unsqueeze(1))
+        outputs = torch.cat(all_outputs, dim=1)
+        return outputs, hidden
+
+class DecoderCellRNN(nn.Module):
+    def __init__(self, output_dim, embed_dim, hidden_dim, attention):
+        super().__init__()
+        self.output_dim = output_dim
+        self.hidden_dim = hidden_dim
+        self.attention = attention
+        self.embedding = nn.Embedding(output_dim, embed_dim)
+        self.rnn_cell = nn.GRUCell(embed_dim + hidden_dim, hidden_dim)
+        self.fc_out = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, tgt, hidden, encoder_outputs):
+        batch_size, tgt_len = tgt.shape
+        all_logits = torch.zeros(batch_size, tgt_len, self.output_dim, device=tgt.device)
+        for t in range(tgt_len):
+            embedded = self.embedding(tgt[:, t])
+            context, _ = self.attention(hidden, encoder_outputs)
+            rnn_input = torch.cat((embedded, context), dim=1)
+            hidden = self.rnn_cell(rnn_input, hidden)
+            logits = self.fc_out(hidden)
+            all_logits[:, t, :] = logits
+        return all_logits, hidden
+
+# Hyperparameters
+INPUT_DIM = 32
+OUTPUT_DIM = 64
+EMBED_DIM = 256
+HIDDEN_DIM = 512
+
+# Instantiate model components
+encoder = EncoderCellRNN(INPUT_DIM, EMBED_DIM, HIDDEN_DIM)
+attention = DotAttention()
+decoder = DecoderCellRNN(OUTPUT_DIM, EMBED_DIM, HIDDEN_DIM, attention)
+
+# Example input data
+batch_size = 2
+src_len = 7
+tgt_len = 5
+src = torch.randint(0, INPUT_DIM, (batch_size, src_len))
+tgt = torch.randint(0, OUTPUT_DIM, (batch_size, tgt_len))
+
+# Forward pass
+encoder_outputs, encoder_final_hidden = encoder(src)
+decoder_hidden = encoder_final_hidden
+logits, final_hidden = decoder(tgt, decoder_hidden, encoder_outputs)
+print("Logits shape:", logits.shape)  # Expected output: torch.Size([2, 5, 64])
